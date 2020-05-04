@@ -1,13 +1,15 @@
 <?php 
 
+namespace vendor\core;
+
 class Router{
 
-    // public function __construct(){
-    //     echo 'Привет мир!';
-    // }
+//   public function __construct(){
+//    echo 'Привет мир!';
+//   }
 
 
-    protected static $routes = []; 
+    protected static $routes = [];
     protected static $route = [];
 
     public static function add($regexp, $route = []){
@@ -34,7 +36,7 @@ class Router{
                         $route['action'] = 'index';
                     }
                 }    
-
+                $route['controller'] = self::upperCamelCase($route['controller']);
                 self::$route = $route;
                 //debug(self::$route);
                 return true;
@@ -51,14 +53,16 @@ class Router{
     *@return void
     */
 
-
-
     public static function dispatch($url){
+        $url = self::removeQueryString($url);
+        var_dump($url);
         if(self::matchRoute($url)){
-            $controller = self::upperCamelCase(self::$route['controller']);
+            $controller = 'app\controllers\\' . self::$route['controller'];
+
             if(class_exists($controller)){
-                $cObj = new $controller;
+                $cObj = new $controller(self::$route);
                 $action = self::lowerCamelCase(self::$route['action']) . 'Action';
+
                 if(method_exists($cObj, $action)){
                     $cObj->$action();
                 }else{
@@ -81,6 +85,17 @@ class Router{
 
     protected static function lowerCamelCase($name){
         return lcfirst(self::upperCamelCase($name));
+    }
+
+    protected static function removeQueryString($url){
+        if($url){
+            $params = explode('&', $url, 2);
+            if(false === strpos($params[0], '=')){
+                return rtrim($params[0], '/');
+            }else{
+                return '';
+            }
+        }
     }
 
 }

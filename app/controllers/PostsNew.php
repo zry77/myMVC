@@ -1,5 +1,6 @@
-<?php 
+<?php
 
+namespace app\controllers;
 
 class PostsNew{
 
